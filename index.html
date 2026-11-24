@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>إيه قراركم؟</title>
+<style>
+  :root {
+    --bg: #0F0F4E;
+    --bg-deep: #0A0A3C;
+    --text: #F4F4FB;
+    --muted: #B8B9D8;
+    --gold: #EEC04F;
+    --gold-soft: rgba(238, 192, 79, .16);
+    --line: rgba(255, 255, 255, .14);
+    --panel: rgba(255, 255, 255, .07);
+    --teal: #149C92;
+    --blue: #3F7FE6;
+    --coral: #E2604A;
+    --fs: clamp(24px, min(1.9vw, 3.4vh), 36px);
+    --ui: clamp(15px, min(1.2vw, 2.25vh), 21px);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); }
+  body {
+    font-family: Calibri, Tahoma, Arial, sans-serif;
+    color: var(--text);
+    font-size: var(--fs);
+    line-height: 1.6;
+    -webkit-text-size-adjust: 100%;
+  }
+  bdi.en, .en { unicode-bidi: isolate; direction: ltr; }
+  .visually-hidden {
+    position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+
+  /* Frame */
+  .app {
+    height: 100vh; height: 100dvh;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    overflow: hidden;
+  }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    padding: clamp(8px, 1.6vh, 18px) clamp(16px, 4vw, 64px);
+    border-bottom: 1px solid var(--line);
+    font-size: var(--ui);
+    min-width: 0;
+  }
+  .logo { display: block; height: clamp(28px, 5.4vh, 54px); width: auto; flex: none; }
+  .progress {
+    display: flex; align-items: baseline; gap: .9em;
+    color: var(--text); font-weight: 700; white-space: nowrap;
+  }
+  .progress .pct { font-size: 1.35em; color: var(--gold); }
+  .progress:empty { display: none; }
+
+  main {
+    overflow-y: auto; overflow-x: hidden;
+    padding: clamp(14px, 3.2vh, 40px) clamp(16px, 4vw, 64px);
+    min-width: 0;
+  }
+  .screen { max-width: 1520px; margin: 0 auto; }
+  .screen[hidden] { display: none; }
+
+  h2 {
+    color: var(--gold);
+    font-size: 1.55em;
+    line-height: 1.25;
+    margin: 0 0 .55em;
+    font-weight: 700;
+  }
+  h2:focus { outline: none; }
+  p { margin: 0 0 .6em; }
+
+  /* Intro */
+  .intro {
+    min-height: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 2em;
+  }
+  .intro h2 { font-size: 3.1em; margin-bottom: .3em; }
+  .intro .lead { font-size: 1.15em; max-width: 26em; }
+  .intro .role { font-size: 1.3em; font-weight: 700; line-height: 1.45; max-width: 24em; margin-bottom: .55em; }
+  .intro .role .gold { color: var(--gold); }
+  .intro .lead { color: var(--muted); }
+  .intro .context { color: var(--muted); font-size: .8em; margin-top: 1.2em; }
+  .paddles {
+    display: flex; justify-content: center; align-items: flex-end;
+    gap: clamp(14px, 2.6vw, 44px);
+    padding-block: .5em;
+    font-size: 1.3em;
+  }
+  .paddle { display: flex; flex-direction: column; align-items: center; }
+  .paddle .head {
+    display: flex; align-items: center; justify-content: center;
+    width: 4.6em; height: 3.5em;
+    border-radius: 1.2em 1.2em 1em 1em;
+    color: #fff; font-weight: 700; font-size: 1em;
+    box-shadow: 0 .5em 1.2em rgba(0, 0, 20, .35);
+  }
+  .paddle .handle {
+    width: .85em; height: 3.1em; background: var(--gold);
+    border-radius: 0 0 .4em .4em;
+  }
+  .paddle.test { --tilt: 5deg; --lift: .4em; }
+  .paddle.revise { --tilt: 0deg; --lift: -.5em; }
+  .paddle.hold { --tilt: -5deg; --lift: .4em; }
+  .paddle { transform: rotate(var(--tilt)) translateY(var(--lift)); transform-origin: 50% 100%; }
+  .paddle.test .head { background: var(--teal); }
+  .paddle.revise .head { background: var(--blue); }
+  .paddle.hold .head { background: var(--coral); }
+
+  /* Situations */
+  .situation h2 { margin-bottom: .4em; }
+  .situation h2::after {
+    content: ""; display: block;
+    width: 3.2em; height: .1em; margin-top: .16em;
+    background: var(--gold); border-radius: 1em;
+  }
+  .story {
+    column-count: 2;
+    column-gap: 2.2em;
+    line-height: 1.62;
+  }
+  .story p { orphans: 2; widows: 2; }
+  .story p:last-child { margin-bottom: 0; }
+  .question {
+    margin-top: .75em;
+    background: var(--panel);
+    border: 1px solid rgba(238, 192, 79, .35);
+    border-radius: 10px;
+    padding: .65em 1em .75em;
+  }
+  .question .q-label { display: block; font-size: .78em; font-weight: 700; color: var(--gold); margin-bottom: .1em; }
+  .question p { margin: 0; font-weight: 700; line-height: 1.55; color: var(--text); }
+
+  /* Closing */
+  .closing { min-height: 100%; display: flex; flex-direction: column; justify-content: center; }
+  .closing h2 { font-size: 1.9em; max-width: 24em; }
+  .closing .second { font-size: 1.35em; color: var(--text); font-weight: 700; max-width: 28em; line-height: 1.45; }
+
+  /* Controls */
+  .controls {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: .6em 1.4em;
+    padding: clamp(8px, 1.4vh, 16px) clamp(16px, 4vw, 64px);
+    background: var(--bg-deep);
+    border-top: 1px solid var(--line);
+    font-size: var(--ui);
+    min-width: 0;
+  }
+  .group { display: flex; flex-wrap: wrap; align-items: center; gap: .55em; min-width: 0; }
+  .group[hidden] { display: none; }
+  button {
+    font: inherit; font-weight: 700;
+    min-height: 44px;
+    padding: .4em 1.05em;
+    border-radius: 6px;
+    border: 2px solid rgba(255, 255, 255, .7);
+    background: transparent; color: var(--text);
+    cursor: pointer;
+    line-height: 1.3;
+    transition: background-color .18s ease, transform .18s ease, border-color .18s ease;
+  }
+  button:hover { background: rgba(255, 255, 255, .1); transform: translateY(-1px); }
+  button:active { transform: translateY(0); }
+  button.primary { background: var(--gold); border-color: var(--gold); color: var(--bg); }
+  button.primary:hover { background: #F6CF6C; border-color: #F6CF6C; }
+  button:disabled { opacity: .35; cursor: default; transform: none; }
+  button:disabled:hover { background: transparent; }
+  button.primary:disabled:hover { background: var(--gold); }
+  button[hidden] { display: none; }
+  :focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+  .timer-read {
+    font-weight: 700; color: var(--text);
+    font-size: 1.45em; min-width: 3.4em; text-align: center;
+    font-variant-numeric: tabular-nums;
+    transition: color .2s ease;
+  }
+  .timer-read.running { color: var(--gold); }
+  .timer-read.done { color: var(--muted); }
+
+  /* Menu */
+  dialog {
+    border: 1px solid var(--line); border-radius: 12px; padding: 0;
+    width: min(680px, calc(100vw - 32px));
+    max-height: calc(100dvh - 40px);
+    background: #16165E;
+    color: var(--text);
+    font-size: var(--ui);
+  }
+  dialog::backdrop { background: rgba(4, 4, 24, .6); }
+  .menu-inner { padding: 1.1em 1.3em 1.3em; }
+  .menu-head { display: flex; justify-content: space-between; align-items: center; gap: 1em; margin-bottom: .9em; }
+  .menu-head h2 { font-size: 1.35em; margin: 0; }
+  .menu-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .4em; }
+  .menu-list button {
+    width: 100%; text-align: right; font-weight: 400;
+    border-width: 1px; border-color: var(--line);
+    display: flex; justify-content: space-between; gap: 1em; align-items: center;
+  }
+  .menu-list button b { font-weight: 700; color: var(--gold); }
+  .menu-list button[aria-current="true"] { border: 2px solid var(--gold); background: var(--gold-soft); }
+  .menu-list .now { font-size: .82em; color: var(--muted); white-space: nowrap; }
+
+  /* Motion: each screen arrives whole, never piece by piece */
+  @keyframes screenIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes lineGrow { from { width: 0; } to { width: 3.2em; } }
+  @keyframes paddleUp {
+    from { opacity: 0; transform: rotate(var(--tilt)) translateY(2.4em); }
+    to { opacity: 1; transform: rotate(var(--tilt)) translateY(var(--lift)); }
+  }
+  @keyframes paddleSway {
+    0%, 100% { transform: rotate(var(--tilt)) translateY(var(--lift)); }
+    50% { transform: rotate(calc(var(--tilt) * -0.6)) translateY(calc(var(--lift) - .35em)); }
+  }
+  @keyframes goldGlow {
+    0%, 100% { text-shadow: 0 0 0 rgba(238, 192, 79, 0); }
+    50% { text-shadow: 0 0 .45em rgba(238, 192, 79, .45); }
+  }
+  .screen.enter { animation: screenIn .45s cubic-bezier(.2, .7, .2, 1) both; }
+  .screen.enter.situation h2::after { animation: lineGrow .7s .2s cubic-bezier(.2, .7, .2, 1) both; }
+  .intro.enter h2 { animation: goldGlow 2.4s .3s ease-in-out 1; }
+  .intro .paddle {
+    animation: paddleUp .7s cubic-bezier(.2, .8, .25, 1.2) both, paddleSway 4.2s ease-in-out infinite;
+  }
+  .intro .paddle.test { animation-delay: .15s, .85s; }
+  .intro .paddle.revise { animation-delay: .3s, 1.6s; }
+  .intro .paddle.hold { animation-delay: .45s, 2.3s; }
+  .intro .paddle:hover .head { transform: translateY(-.15em); }
+  .paddle .head { transition: transform .2s ease; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+
+  /* Narrower laptops and tablets */
+  @media (max-width: 1100px) {
+    .story { column-count: 1; }
+    .intro { grid-template-columns: 1fr; gap: 1em; align-content: center; }
+    .intro .paddles { justify-content: flex-start; }
+  }
+  @media (max-width: 1023px) {
+    :root { --fs: 22px; --ui: 16px; }
+  }
+  /* Phones */
+  @media (max-width: 640px) {
+    :root { --fs: 19px; --ui: 15px; }
+    .intro h2 { font-size: 2.3em; }
+    .controls { justify-content: center; }
+    .group { justify-content: center; }
+    .paddle .head { width: 4em; height: 3em; }
+    .closing h2 { font-size: 1.5em; }
+    .closing .second { font-size: 1.15em; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <svg class="logo" role="img" aria-label="Skills Bank" viewBox="0 0 1180 440" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0.000000,440.000000) scale(0.100000,-0.100000)" fill="#FFFFFF" stroke="none"> <path d="M503 3950 c-18 -10 -39 -33 -48 -49 l-15 -31 0 -1675 0 -1676 14 -34 c8 -18 25 -41 39 -49 l24 -16 1679 -1 1678 0 26 19 c49 37 48 31 49 1105 l1 1008 -15 28 c-8 16 -29 41 -46 55 l-32 27 -553 -2 -554 -1 -25 16 c-48 32 -48 25 -46 625 l2 566 -18 35 c-10 20 -33 43 -53 52 l-35 18 -1020 0 -1020 0 -32 -20z M3175 3961 c-11 -5 -29 -19 -40 -31 l-20 -22 -3 -139 -4 -139 30 -30 30 -30 147 0 c166 0 203 -10 235 -62 l20 -33 0 -143 c0 -214 11 -226 203 -220 l115 3 21 19 c36 33 41 80 41 409 l0 318 -14 33 c-7 18 -26 42 -41 54 l-28 22 -336 -1 c-185 0 -345 -4 -356 -8z M4825 3909 c-121 -21 -142 -32 -242 -123 l-61 -56 -19 -53 c-22 -65 -25 -249 -4 -320 29 -99 184 -222 318 -253 37 -9 88 -23 113 -32 25 -8 94 -32 155 -52 166 -56 225 -116 225 -232 0 -112 -62 -176 -194 -199 -89 -15 -345 -6 -441 16 -38 9 -81 18 -95 21 -93 20 -109 -172 -18 -210 170 -71 686 -60 793 16 17 13 53 38 78 57 l47 35 47 90 47 91 0 85 0 85 -46 91 c-46 89 -58 103 -152 173 -48 35 -254 111 -424 156 l-93 25 -59 51 c-67 59 -80 83 -80 144 l0 43 50 60 c29 35 63 65 82 71 67 24 218 33 338 21 63 -6 146 -14 183 -17 l68 -5 19 17 c26 24 35 76 20 120 l-12 37 -43 19 c-109 48 -407 62 -600 28z M10649 3910 c-108 -20 -118 -24 -200 -87 -122 -92 -152 -156 -152 -323 l0 -106 20 -44 c44 -100 198 -218 320 -246 37 -9 93 -25 123 -36 30 -11 97 -33 148 -48 107 -33 151 -62 189 -127 l27 -47 1 -56 c0 -63 -33 -142 -70 -166 -70 -46 -323 -58 -520 -24 -190 32 -218 24 -218 -63 0 -97 41 -126 215 -152 217 -33 400 -27 580 20 70 18 166 97 222 182 l47 71 10 66 c6 43 5 92 -1 137 l-10 72 -47 69 c-32 49 -66 85 -117 121 l-70 52 -126 43 c-69 24 -168 55 -220 69 -112 30 -143 44 -183 87 -50 53 -67 88 -67 137 l0 46 38 54 c21 30 52 61 72 71 80 39 314 45 490 12 97 -18 97 -18 125 11 l25 24 0 46 c0 61 -22 101 -62 114 -127 41 -424 52 -589 21z M5875 3896 c-17 -7 -36 -20 -42 -28 l-13 -15 0 -701 c-1 -464 3 -708 10 -721 15 -28 73 -44 146 -39 l64 4 23 22 22 22 0 213 0 212 19 35 c10 19 35 54 55 77 20 23 48 55 62 72 l27 31 39 0 c53 0 80 -22 114 -94 16 -33 43 -83 61 -109 18 -26 52 -76 75 -110 24 -34 54 -84 69 -112 14 -27 34 -58 43 -69 9 -10 32 -48 51 -85 l35 -66 45 -22 c33 -17 62 -23 112 -23 l68 0 20 20 c32 32 20 80 -35 130 -15 14 -36 45 -46 69 -11 24 -33 59 -49 78 -17 18 -39 52 -51 74 -11 22 -39 69 -62 104 -60 91 -97 149 -139 222 -20 35 -51 80 -67 99 -36 41 -46 71 -37 120 l7 35 151 167 c83 92 185 202 225 244 l74 77 -3 28 c-4 37 -38 53 -116 53 -93 0 -116 -14 -242 -151 -62 -68 -130 -142 -150 -164 -21 -22 -62 -67 -91 -99 -30 -33 -70 -76 -89 -96 -19 -20 -48 -53 -63 -73 l-28 -37 -29 0 c-20 0 -35 8 -46 25 l-16 24 3 253 c2 180 0 259 -9 274 -22 41 -133 58 -197 30z M7354 3900 c-12 -5 -29 -19 -38 -32 l-16 -22 0 -702 0 -702 18 -22 c35 -43 168 -40 216 5 l26 24 0 693 0 694 -16 23 c-31 44 -131 65 -190 41z M7913 3896 c-17 -8 -36 -23 -42 -34 -7 -14 -11 -243 -12 -717 l0 -696 12 -15 c7 -9 25 -22 40 -30 l28 -14 451 0 c275 0 458 4 470 10 43 23 45 127 3 161 l-16 14 -343 5 -344 5 -26 26 -26 27 -2 611 -1 610 -22 23 -22 22 -58 3 c-36 2 -70 -2 -90 -11z M9145 3898 c-11 -6 -26 -18 -32 -26 l-13 -16 0 -707 0 -707 19 -23 19 -24 449 -3 c246 -1 458 0 471 3 66 16 84 100 34 156 l-28 32 -306 -2 -306 -2 -35 14 c-19 8 -42 25 -51 38 l-16 23 0 599 0 598 -25 23 c-38 35 -136 48 -180 24z M6526 1955 c-65 -23 -100 -66 -125 -153 -13 -42 -33 -95 -46 -118 -13 -22 -36 -83 -50 -135 -15 -52 -39 -116 -55 -144 -15 -27 -37 -85 -49 -128 -12 -43 -35 -104 -51 -137 -16 -32 -38 -89 -48 -127 -11 -37 -35 -99 -55 -138 -19 -38 -41 -97 -47 -130 -7 -33 -30 -93 -51 -133 -58 -109 -52 -170 17 -192 71 -24 169 12 201 73 9 18 26 65 39 105 27 90 80 179 116 198 l27 14 254 0 254 0 26 -20 c33 -27 89 -128 117 -215 41 -124 80 -158 186 -159 l63 -1 18 18 c29 28 22 105 -16 172 -17 30 -41 90 -52 132 -12 43 -34 103 -49 133 -15 30 -37 90 -49 133 -12 43 -36 108 -54 145 -19 37 -40 90 -47 117 -7 28 -28 81 -47 118 -19 38 -43 105 -54 149 -11 45 -33 107 -49 139 -16 31 -37 88 -46 125 l-17 69 -41 40 c-63 61 -140 79 -220 50z m104 -350 c38 -20 46 -35 70 -140 11 -48 37 -122 58 -164 21 -42 46 -114 57 -160 l19 -84 -28 -23 -27 -24 -175 0 -175 0 -29 15 -30 16 0 30 c0 48 47 204 84 277 19 37 37 83 41 102 14 74 37 131 62 150 31 24 36 24 73 5z M7651 1958 c-13 -7 -34 -26 -45 -41 l-21 -28 -3 -680 c-3 -741 -2 -747 51 -780 l32 -20 48 4 c36 3 56 11 75 31 l27 26 5 485 c5 502 6 514 46 501 30 -9 114 -96 136 -140 11 -23 36 -61 55 -86 19 -25 47 -65 64 -90 16 -25 54 -79 84 -120 30 -41 63 -88 72 -104 10 -16 39 -56 64 -90 25 -34 52 -72 59 -86 7 -14 27 -43 45 -65 17 -22 43 -59 56 -82 13 -22 52 -70 85 -106 l61 -66 36 -6 c53 -10 117 13 139 50 l17 31 1 686 1 687 -16 30 c-42 83 -159 94 -205 19 l-20 -33 0 -465 0 -466 -16 -22 c-20 -29 -49 -28 -71 3 -10 14 -34 47 -53 73 -19 26 -50 71 -67 100 -18 30 -44 68 -58 85 -15 18 -41 55 -60 82 -47 69 -115 167 -175 250 -27 39 -63 90 -80 115 -16 25 -50 74 -76 110 -25 36 -55 80 -67 99 -29 44 -123 110 -167 117 -19 2 -46 -1 -59 -8z M9246 1960 c-38 -12 -66 -38 -82 -77 l-14 -32 0 -658 c0 -420 4 -671 10 -695 19 -67 100 -103 176 -78 57 19 64 48 64 267 0 211 8 254 54 298 17 16 44 47 59 68 34 45 74 67 122 67 l36 0 17 -31 c9 -18 32 -52 49 -78 18 -25 46 -72 63 -104 17 -32 46 -78 65 -103 19 -25 35 -51 35 -58 0 -7 22 -44 48 -82 27 -38 57 -84 66 -103 26 -49 96 -122 133 -137 42 -18 85 -18 128 0 l35 15 0 34 c0 44 -22 98 -59 139 -15 18 -40 56 -54 84 -14 28 -37 64 -50 80 -13 16 -34 49 -47 74 -13 25 -33 58 -46 73 -13 16 -42 59 -65 95 -22 37 -50 82 -62 100 -12 19 -42 63 -66 100 -24 36 -46 82 -48 103 l-5 37 83 93 c46 51 142 156 213 234 141 152 166 187 166 225 0 46 -14 55 -84 54 -115 -2 -172 -42 -346 -243 -30 -35 -92 -102 -137 -150 -45 -47 -93 -101 -106 -119 -34 -45 -133 -142 -146 -142 -6 0 -20 9 -31 20 l-20 20 0 265 0 266 -14 28 c-8 15 -21 32 -28 38 -19 16 -79 23 -112 13z M4573 1950 c-13 -5 -32 -24 -43 -42 l-20 -33 0 -683 0 -683 14 -34 c24 -57 20 -56 474 -53 l417 3 89 40 c149 67 198 130 232 294 18 94 15 158 -13 247 l-18 58 -62 68 -63 68 0 34 c0 24 11 49 36 82 20 26 45 66 55 88 l19 41 0 99 c0 122 -9 152 -73 246 l-52 75 -55 27 c-30 15 -91 36 -134 48 l-80 20 -350 -1 c-193 0 -361 -4 -373 -9z m730 -207 c68 -21 112 -63 137 -131 30 -79 24 -132 -25 -212 l-38 -62 -41 -19 -41 -19 -233 0 -234 0 -29 30 -30 30 3 164 3 165 21 28 c11 15 31 33 43 39 34 17 402 7 464 -13z m7 -643 l65 -9 52 -54 c35 -36 55 -68 63 -98 14 -51 6 -158 -15 -198 -19 -36 -95 -108 -127 -120 -14 -5 -134 -11 -267 -12 l-240 -2 -26 17 c-40 26 -45 54 -45 244 l0 178 15 22 c9 12 30 26 48 31 42 12 394 13 477 1z"/> </g></svg>
+    <div class="progress" id="progress" aria-live="polite"></div>
+  </header>
+
+  <main id="main">
+    <h1 class="visually-hidden">إيه قراركم؟ نشاط مناقشة جماعية</h1>
+
+    <section class="screen intro" id="intro" data-screen aria-labelledby="t-intro">
+      <div>
+        <h2 id="t-intro" tabindex="-1">إيه قراركم؟</h2>
+        <p class="role">أنتم النهارده فريق العمل في <span class="gold">مركز شباب الأمل</span>، و<span class="gold">القرار في إيديكم</span>.</p>
+        <p class="lead">اقرأوا الموقف، ناقشوا الأدلة، وارفعوا المضرب الذي يعبّر عن قرار مجموعتكم.</p>
+        <p class="context">تدريب <bdi class="en" lang="en">Social Inclusion</bdi>، اليوم الثالث</p>
+      </div>
+      <div class="paddles" aria-hidden="true">
+        <div class="paddle test"><span class="head"><bdi class="en" lang="en">Test</bdi></span><span class="handle"></span></div>
+        <div class="paddle revise"><span class="head"><bdi class="en" lang="en">Revise</bdi></span><span class="handle"></span></div>
+        <div class="paddle hold"><span class="head"><bdi class="en" lang="en">Hold</bdi></span><span class="handle"></span></div>
+      </div>
+    </section>
+
+
+    <section class="screen situation" id="s1" data-screen aria-labelledby="t-s1" hidden>
+      <h2 id="t-s1" tabindex="-1">نجاح التجربة… مع مين؟</h2>
+      <div class="story">
+        <p>يريد مركز شباب الأمل تجربة طريقة جديدة لحجز ورشة الاستعداد للمقابلات الشخصية. أكمل ستة شباب نموذج الحجز بالموبايل من غير مساعدة، وعرفوا موعد الورشة وطريقة تأكيد الحجز. لكن الستة من المشاركين المعتادين في أنشطة المركز، ولم يشارك زائر جديد في الاختبار.</p>
+        <p>في استطلاع سابق شمل 18 مهتمًا بالورشة، قال خمسة إنهم لا يستخدمون الموبايل للحجز. لذلك أبقى الفريق الحجز عند الاستقبال متاحًا بنفس الشروط، وجرّب موظف الاستقبال تسجيل طلبين والتأكد من عدم تكرار الحجز.</p>
+        <p>الموظف والمكان متاحان، ولم تتغير شروط الاشتراك أو الرسوم. يريد الفريق الآن طلب الموافقة على تجربة محدودة تستهدف زوارًا جددًا ومستخدمين للطريقتين، قبل تعميم النظام.</p>
+      </div>
+      <div class="question">
+        <span class="q-label">السؤال</span>
+        <p>هل الاقتراح جاهز لطلب تجربة محدودة، أم يجب تعديل التصميم أولًا، أم يتوقف لحين استكمال أمر أساسي؟ احكموا على الخطوة المقترحة، لا على التعميم.</p>
+      </div>
+    </section>
+
+    <section class="screen situation" id="s2" data-screen aria-labelledby="t-s2" hidden>
+      <h2 id="t-s2" tabindex="-1">كل واحد شارك… لكن مين قرر؟</h2>
+      <div class="story">
+        <p>صمم فريق مركز شباب الأمل ورشة رسم جداري لشباب يشاركون معًا لأول مرة، وهدفها أن يساهم كل شاب في اختيار الرسالة والتصميم. في النموذج التجريبي، قدم 12 مشاركًا فكرة لكل منهم، وتحدث الجميع لمدة متساوية، وسجل الميسر كل الأفكار.</p>
+        <p>بعد ذلك اختار الميسر وثلاثة مشاركين ذوي خبرة التصميم النهائي لأنهم الأقدر على تجهيزه في الوقت المتاح. رأى بعض المشاركين أن النتيجة جميلة، بينما قال أربعة إنهم لم يفهموا لماذا استُبعدت أفكارهم.</p>
+        <p>يقترح الفريق إعادة التجربة بنفس طريقة اتخاذ القرار، مع زيادة وقت الحديث وشرح الاختيار في النهاية. المكان والأدوات متاحان، وأي تجربة فعلية ستتم بعد الموافقة المعتادة.</p>
+      </div>
+      <div class="question">
+        <span class="q-label">السؤال</span>
+        <p>ما القرار المناسب بشأن النسخة المقترحة الآن؟ وهل زيادة وقت الحديث تعالج المشكلة التي ظهرت؟</p>
+      </div>
+    </section>
+
+    <section class="screen situation" id="s3" data-screen aria-labelledby="t-s3" hidden>
+      <h2 id="t-s3" tabindex="-1">الشريك جاهز… والبيانات؟</h2>
+      <div class="story">
+        <p>عرض شريك مجتمعي توفير أجهزة ومدرب لورشة مهارات رقمية بمركز شباب الأمل لمدة شهر. الموعد مناسب للشباب الذين جرى التشاور معهم، والمكان والموظفون متاحون.</p>
+        <p>طلب الشريك إرسال أسماء المشاركين وأرقام موبايلاتهم وصور بطاقات هويتهم إلى منصة يديرها خارج المركز لإصدار شهادات الحضور. من يستخدم استمارة ورقية سيقوم الموظف برفع بياناته على المنصة أيضًا. عرض الشريك إخفاء الصور من التقرير النهائي، لكنه أكد أن رفع البيانات شرط لتشغيل الحسابات.</p>
+        <p>وافق مسؤول النشاط على فائدة الورشة، إلا أن الجهة المخولة بمراجعة مشاركة البيانات لم تحسم هذا المسار. يقترح الفريق بدء الحجز وإرسال أول دفعة بيانات الآن لأن موعد الشريك قريب.</p>
+      </div>
+      <div class="question">
+        <span class="q-label">السؤال</span>
+        <p>ما قراركم بشأن بدء الحجز وإرسال البيانات بالمسار المقترح الآن؟ وهل الاستمارة الورقية أو إخفاء الصور من التقرير يحلان النقطة المعلقة؟</p>
+      </div>
+    </section>
+
+    <section class="screen situation" id="s4" data-screen aria-labelledby="t-s4" hidden>
+      <h2 id="t-s4" tabindex="-1">جلسة واحدة… ولا برنامج كامل؟</h2>
+      <div class="story">
+        <p>يريد مركز شباب الأمل معرفة ما إذا كان تقديم ورشة رياضية صباح السبت يساعد شبابًا لا يستطيعون الحضور مساءً. جرى التشاور مع مجموعة من هؤلاء الشباب، وأكدوا مناسبة الموعد المقترح.</p>
+        <p>المدرب والمكان والأدوات متاحون ومؤكدون لجلسة واحدة فقط، وهناك موظف محدد لتنسيقها. لا يوجد التزام بتوفير المدرب لباقي الشهر، ولذلك لم يعلن المركز برنامجًا مستمرًا.</p>
+        <p>الاقتراح الحالي هو طلب تجربة جلسة واحدة، مع إبلاغ المشاركين بوضوح أنها تجربة، وملاحظة حضورهم وقدرتهم على المشاركة، وسؤالهم عن الموعد. يرى موظف أن التجربة ستخلق توقعات لا يستطيع المركز الوفاء بها، ويرى آخر أن انتظار تأمين شهر كامل سيمنعهم من التعلم.</p>
+      </div>
+      <div class="question">
+        <span class="q-label">السؤال</span>
+        <p>هل عدم تأمين الاستمرار يمنع طلب تجربة الجلسة الواحدة؟ وما الذي يمكن لهذه التجربة إثباته وما الذي لن تثبته؟</p>
+      </div>
+    </section>
+
+    <section class="screen closing" id="end" data-screen aria-labelledby="t-end" hidden>
+      <h2 id="t-end" tabindex="-1">ما الدليل الذي حسم قراركم؟</h2>
+      <p class="second">وما الذي يجب أن يتغير حتى يصبح الاقتراح جاهزًا للخطوة التالية؟</p>
+    </section>
+  </main>
+
+  <footer class="controls" aria-label="تحكم المدرب">
+    <div class="group" role="group" aria-label="التنقل">
+      <button type="button" id="btnPrev">السابق</button>
+      <button type="button" id="btnNext" class="primary">التالي</button>
+    </div>
+    <div class="group" id="timerGroup" role="group" aria-label="المؤقت" hidden>
+      <span class="timer-read" id="timerRead" role="timer" aria-live="off"><bdi class="en">03:30</bdi></span>
+      <button type="button" id="btnTimer" aria-label="بدء المؤقت">بدء المؤقت</button>
+      <button type="button" id="btnReset">إعادة ضبط</button>
+    </div>
+    <div class="group" role="group" aria-label="القائمة والعرض">
+      <button type="button" id="btnMenu" aria-haspopup="dialog">قائمة المواقف</button>
+      <button type="button" id="btnFull">الشاشة الكاملة</button>
+    </div>
+  </footer>
+</div>
+
+<dialog id="menu" aria-labelledby="t-menu">
+  <div class="menu-inner">
+    <div class="menu-head">
+      <h2 id="t-menu">قائمة المواقف</h2>
+      <button type="button" id="btnClose">إغلاق</button>
+    </div>
+    <ol class="menu-list" id="menuMain"></ol>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  'use strict';
+
+  var MAIN = ['intro', 's1', 's2', 's3', 's4', 'end'];
+  var INFO = {
+    intro: { menu: 'البداية' },
+    s1: { tag: 'موقف أساسي 1', pct: '25%', menu: 'نجاح التجربة… مع مين؟', situation: true },
+    s2: { tag: 'موقف أساسي 2', pct: '50%', menu: 'كل واحد شارك… لكن مين قرر؟', situation: true },
+    s3: { tag: 'موقف أساسي 3', pct: '75%', menu: 'الشريك جاهز… والبيانات؟', situation: true },
+    s4: { tag: 'موقف أساسي 4', pct: '100%', menu: 'جلسة واحدة… ولا برنامج كامل؟', situation: true },
+    end: { menu: 'الختام' }
+  };
+  var KEY = 'y4f-what-is-your-decision-ar:last-screen';
+
+  var $ = function (id) { return document.getElementById(id); };
+  var main = $('main');
+  var screens = {};
+  Array.prototype.forEach.call(document.querySelectorAll('[data-screen]'), function (el) { screens[el.id] = el; });
+
+  var current = null;
+
+  /* ---------- Storage with safe fallback ---------- */
+  var memoryStore = null;
+  function savePosition(id) {
+    try { window.localStorage.setItem(KEY, id); } catch (e) { memoryStore = id; }
+    try { history.replaceState(null, '', '#' + id); } catch (e) { /* file:// may refuse; ignore */ }
+  }
+  function valid(id) { return typeof id === 'string' && Object.prototype.hasOwnProperty.call(screens, id); }
+  function loadPosition() {
+    var h = (location.hash || '').replace('#', '');
+    if (valid(h)) return h;
+    try {
+      var v = window.localStorage.getItem(KEY);
+      if (valid(v)) return v;
+    } catch (e) { /* storage unavailable */ }
+    return valid(memoryStore) ? memoryStore : 'intro';
+  }
+
+  /* ---------- Timer (one timer, never auto-starts) ---------- */
+  var DURATION = 3.5 * 60 * 1000;
+  var remaining = DURATION, endAt = null, tick = null;
+  var timerRead = $('timerRead'), btnTimer = $('btnTimer');
+
+  function fmt(ms) {
+    var s = Math.ceil(ms / 1000);
+    var m = Math.floor(s / 60), r = s % 60;
+    return (m < 10 ? '0' : '') + m + ':' + (r < 10 ? '0' : '') + r;
+  }
+  function renderTimer() {
+    timerRead.firstChild.textContent = fmt(remaining);
+    timerRead.classList.toggle('done', remaining <= 0);
+    var running = tick !== null;
+    timerRead.classList.toggle('running', running);
+    var label = running ? 'إيقاف المؤقت' : (remaining < DURATION && remaining > 0 ? 'متابعة المؤقت' : 'بدء المؤقت');
+    btnTimer.textContent = label;
+    btnTimer.setAttribute('aria-label', label);
+    btnTimer.disabled = remaining <= 0;
+  }
+  function update() {
+    remaining = Math.max(0, endAt - Date.now());
+    if (remaining <= 0) { clearInterval(tick); tick = null; endAt = null; }
+    renderTimer();
+  }
+  function startTimer() {
+    if (tick !== null || remaining <= 0) return;
+    endAt = Date.now() + remaining;
+    tick = setInterval(update, 250);
+    renderTimer();
+  }
+  function pauseTimer() {
+    if (tick === null) return;
+    remaining = Math.max(0, endAt - Date.now());
+    clearInterval(tick); tick = null; endAt = null;
+    renderTimer();
+  }
+  function resetTimer() {
+    if (tick !== null) { clearInterval(tick); tick = null; }
+    endAt = null; remaining = DURATION;
+    renderTimer();
+  }
+  btnTimer.addEventListener('click', function () { if (tick !== null) pauseTimer(); else startTimer(); });
+  $('btnReset').addEventListener('click', resetTimer);
+
+  /* ---------- Navigation ---------- */
+  var btnPrev = $('btnPrev'), btnNext = $('btnNext');
+  var progress = $('progress');
+
+  function updateChrome() {
+    var info = INFO[current];
+    var i = MAIN.indexOf(current);
+    btnPrev.disabled = i <= 0;
+    btnNext.disabled = i >= MAIN.length - 1;
+
+    $('timerGroup').hidden = !info.situation;
+
+    progress.textContent = '';
+    if (info.tag) {
+      var t = document.createElement('span'); t.textContent = info.tag; progress.appendChild(t);
+    }
+    if (info.pct) {
+      var p = document.createElement('span'); p.className = 'pct';
+      var b = document.createElement('bdi'); b.className = 'en'; b.textContent = info.pct;
+      p.appendChild(b); progress.appendChild(p);
+    }
+    document.title = (info.tag ? info.tag + ' | ' : '') + 'إيه قراركم؟';
+  }
+
+  function go(id, focusHeading) {
+    if (!valid(id)) return;
+    var changed = id !== current;
+    Object.keys(screens).forEach(function (k) {
+      screens[k].hidden = (k !== id);
+      if (k !== id) screens[k].classList.remove('enter');
+    });
+    if (changed) {
+      var el = screens[id];
+      el.classList.remove('enter');
+      void el.offsetWidth;
+      el.classList.add('enter');
+    }
+    current = id;
+    if (changed) resetTimer();
+    updateChrome();
+    main.scrollTop = 0;
+    savePosition(id);
+    if (focusHeading) {
+      var h = screens[id].querySelector('h2');
+      if (h) { try { h.focus({ preventScroll: true }); } catch (e) { h.focus(); } }
+    }
+  }
+  function next() {
+    var i = MAIN.indexOf(current);
+    if (i < MAIN.length - 1) go(MAIN[i + 1]);
+  }
+  function prev() {
+    var i = MAIN.indexOf(current);
+    if (i > 0) go(MAIN[i - 1]);
+  }
+  btnNext.addEventListener('click', next);
+  btnPrev.addEventListener('click', prev);
+
+  /* ---------- Keyboard shortcuts ---------- */
+  var menu = $('menu');
+  function menuOpen() { return menu.hasAttribute('open'); }
+  document.addEventListener('keydown', function (e) {
+    if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    if (menuOpen()) return;
+    var t = e.target;
+    if (t && t.closest && t.closest('button, a[href], input, select, textarea, summary, [contenteditable=""], [contenteditable="true"], [role="button"], dialog')) return;
+    var k = e.key;
+    if (k === ' ' || k === 'Spacebar' || k === 'PageDown') { e.preventDefault(); next(); }
+    else if (k === 'PageUp') { e.preventDefault(); prev(); }
+  });
+
+  /* ---------- Menu ---------- */
+  function buildMenu() {
+    function fill(listId, ids) {
+      var list = $(listId); list.textContent = '';
+      ids.forEach(function (id) {
+        var li = document.createElement('li');
+        var b = document.createElement('button'); b.type = 'button';
+        var info = INFO[id];
+        var label = document.createElement('span');
+        if (info.tag) {
+          var bt = document.createElement('b'); bt.textContent = info.tag + ': ';
+          label.appendChild(bt);
+          label.appendChild(document.createTextNode(info.menu));
+        } else {
+          var bb = document.createElement('b'); bb.textContent = info.menu; label.appendChild(bb);
+        }
+        b.appendChild(label);
+        if (id === current) {
+          b.setAttribute('aria-current', 'true');
+          var now = document.createElement('span'); now.className = 'now'; now.textContent = 'المعروض الآن';
+          b.appendChild(now);
+        }
+        b.addEventListener('click', function () { closeMenu(); go(id, true); });
+        li.appendChild(b); list.appendChild(li);
+      });
+    }
+    fill('menuMain', MAIN);
+  }
+  function openMenu() {
+    buildMenu();
+    if (typeof menu.showModal === 'function') menu.showModal(); else menu.setAttribute('open', '');
+    var cur = menu.querySelector('[aria-current="true"]') || $('btnClose');
+    cur.focus();
+  }
+  function closeMenu() {
+    if (typeof menu.close === 'function') menu.close(); else menu.removeAttribute('open');
+  }
+  $('btnMenu').addEventListener('click', openMenu);
+  $('btnClose').addEventListener('click', function () { closeMenu(); $('btnMenu').focus(); });
+  menu.addEventListener('click', function (e) { if (e.target === menu) closeMenu(); });
+
+  /* ---------- Full screen ---------- */
+  var btnFull = $('btnFull');
+  var root = document.documentElement;
+  var canFull = !!(root.requestFullscreen || root.webkitRequestFullscreen);
+  function fsElement() { return document.fullscreenElement || document.webkitFullscreenElement || null; }
+  function syncFull() {
+    var on = !!fsElement();
+    btnFull.textContent = on ? 'الخروج من الشاشة الكاملة' : 'الشاشة الكاملة';
+    btnFull.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+  if (!canFull) { btnFull.hidden = true; }
+  btnFull.addEventListener('click', function () {
+    try {
+      if (fsElement()) {
+        (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+      } else {
+        var r = (root.requestFullscreen || root.webkitRequestFullscreen).call(root);
+        if (r && typeof r.catch === 'function') r.catch(function () {});
+      }
+    } catch (e) { /* ignore */ }
+  });
+  document.addEventListener('fullscreenchange', syncFull);
+  document.addEventListener('webkitfullscreenchange', syncFull);
+  syncFull();
+
+  /* ---------- Start ---------- */
+  go(loadPosition());
+})();
+</script>
+</body>
+</html>
